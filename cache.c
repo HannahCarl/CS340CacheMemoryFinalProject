@@ -5,15 +5,20 @@
 int main( int argc, char *argv[] ) {
     clock_t start_t, stop_t;
     unsigned long i;
+    char myArray[4000000] = { 'a' };
+    for(i = 0; i < 4000000; i++){
+        myArray[i] = 'a';
+        
+    }
 
-    start_t = clock();
-    for(i = 0; i < 4000000000; i++){
+    for(i = 0; myArray[i] == 'a'; i++){
+        start_t = clock();
+        myArray[i];
+        stop_t = clock();
+        printf("%ld: This is how long that number loop takes: %ld in clock cycles \n", i, stop_t-start_t);
+
         //dostuff
     }
-    stop_t = clock();
-
-    printf("This is how long that number loop takes: %ld \n", (stop_t-start_t)/CLOCKS_PER_SEC);
-
 
     return 0;
 }
