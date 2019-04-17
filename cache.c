@@ -1,3 +1,6 @@
+//CS 340 Project
+//Team: Jacob Mattox and Hannah Carl
+
 #include <stdio.h>
 #include <time.h>
 
