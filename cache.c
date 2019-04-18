@@ -38,11 +38,11 @@ int main( int argc, char *argv[] ) {
         testArray[ITERATIONS] = 'a';
     }
 
-
+    //not actually an error
     clock_getres(CLOCK_MONOTONIC, &t1);
     printf("getres() timing resolution = %ld nsecs\n", t1.tv_nsec);
 
-    //testing clock acces time for an array
+    //testing clock acces time for an array when only accessing one element ITERATIONS times
     for(i = 0; i < ITERATIONS; i++){
         clock_gettime(CLOCK_MONOTONIC, &t1);
         testArray[1000];
@@ -69,7 +69,7 @@ int main( int argc, char *argv[] ) {
 
 
 
-    //access main memory
+    //access main memory at different locations based on BLOCKS_SIZE
     for(i = 0; i < ITERATIONS; i+=BLOCKS_SIZE){
         clock_gettime(CLOCK_MONOTONIC, &t1);
         testArray[i];
