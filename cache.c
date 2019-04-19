@@ -25,7 +25,7 @@ long elapsed_ns(struct timespec* t1, struct timespec* t2)
   return seconds*1000000000 + ns;
 }
 
-long getCacheBlockSize( int sizeOfBlock){
+long getCacheBlockSize( long long sizeOfBlock){
     char testArray2[sizeOfBlock];
     struct timespec t1, t2;
     
@@ -35,7 +35,7 @@ long getCacheBlockSize( int sizeOfBlock){
         testArray2[(i*64) %sizeOfBlock];
     }
     clock_gettime(CLOCK_MONOTONIC, &t2);
-    return elapsed_s(&t1, &t2);
+    return elapsed_ns(&t1, &t2);
 }
 
 
@@ -53,8 +53,8 @@ int main( int argc, char *argv[] ) {
     char testArray[ITERATIONS];
     
     
-    for(int size = 1024; size<= 67108864; ){
-        printf("%d, %lu\n", size/1024, getCacheBlockSize(size));
+    for(long long size = 1024; size<= 536870912; ){
+        printf("%lld, %lu\n", size/1024, getCacheBlockSize(size/1024));
         size = size *2;
     }
 
@@ -86,13 +86,13 @@ int main( int argc, char *argv[] ) {
         if(results[i] < 100)
             mode[results[i]] += 1;
     }
+    max=0;
     for(i = 0; i < 100; i++){
         if(max < mode[i]){
-            max = mode[i];
-            position = i;
+            max = i;
         }
     }
-    printf("the mode of cycles is: %d\n", position);
+    printf("the mode of cycles is: %d\n", max);
 
 
 
@@ -117,11 +117,10 @@ int main( int argc, char *argv[] ) {
     }
     for(i = 0; i < 100; i++){
         if(max < mode[i]){
-            max = mode[i];
-            position = i;
+            max = i;
         }
     }
-    printf("the mode of main memory access cycles is: %d\n", position);
+    printf("the mode of main memory access cycles is: %d\n", max);
 
     return 0;
 }
