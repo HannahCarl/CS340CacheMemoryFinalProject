@@ -25,17 +25,20 @@ long elapsed_ns(struct timespec* t1, struct timespec* t2)
   return seconds*1000000000 + ns;
 }
 
-long getCacheBlockSize( int sizeOfBlock){
-    char testArray2[sizeOfBlock];
+long getCacheBlockSize( long sizeOfBlock){
+    char testArray2[sizeOfBlock/1024];
     struct timespec t1, t2;
-    
-    clock_getres(CLOCK_MONOTONIC, &t1);
-    
-    for(int i =0; i < sizeOfBlock; i++){
-        testArray2[(i*64) %sizeOfBlock];
+    long i;
+    for(i = 0; i < sizeOfBlock/1024; i++){
+        testArray2[i] = 'a';
     }
+    clock_gettime(CLOCK_MONOTONIC, &t1);
+    
+    //for(i =0; i < sizeOfBlock; i++){
+        testArray2[(i*64) % sizeOfBlock];
+   // }
     clock_gettime(CLOCK_MONOTONIC, &t2);
-    return elapsed_s(&t1, &t2);
+    return elapsed_ns(&t1, &t2);
 }
 
 
@@ -51,10 +54,11 @@ int main( int argc, char *argv[] ) {
     float max = 0;
     int position = 0;
     char testArray[ITERATIONS];
+    long long size;
     
     
-    for(int size = 1024; size<= 67108864; ){
-        printf("%d, %lu\n", size/1024, getCacheBlockSize(size));
+    for(size = 1024; size<= 4294967296; ){
+        printf("%lld, %lu\n", size/1024, getCacheBlockSize(size));
         size = size *2;
     }
 
@@ -72,15 +76,40 @@ int main( int argc, char *argv[] ) {
     //testing clock acces time for an array when only accessing one element ITERATIONS times
     for(i = 0; i < ITERATIONS; i++){
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        testArray[1000];
+        //testArray[1000];
         clock_gettime(CLOCK_MONOTONIC, &t2);
         results[i] = elapsed_ns(&t1, &t2);
-        sum += results[i];     
+        //sum += results[i];     
     }
-    printf("sum when accessing one element over and over %f\n", sum);
-    average = sum/ITERATIONS;
+    //printf("sum when accessing one element over and over %f\n", sum);
+    //average = sum/ITERATIONS;
 
-    printf("Average cycles: %f\n", average);
+    //printf("Average nanoseconds: %f\n", average);
+
+    for(i = 0; i < ITERATIONS; i++){
+        if(results[i] < 100)
+            mode[results[i]] += 1;
+    }
+    for(i = 0; i < 100; i++){
+        if(max < mode[i]){
+            max = mode[i];
+            position = i;
+        }
+    }
+    printf("the mode of clock time is: %d\n", position);
+
+
+    for(i = 0; i < ITERATIONS; i++){
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        testArray[0] = 'b';
+        clock_gettime(CLOCK_MONOTONIC, &t2);
+        results[i] = elapsed_ns(&t1, &t2);
+        //sum += results[i];     
+    }
+    //printf("sum when accessing one element over and over %f\n", sum);
+   // average = sum/ITERATIONS;
+
+    //printf("Average nanoseconds: %f\n", average);
     //handles mode for clock cycles
     for(i = 0; i < ITERATIONS; i++){
         if(results[i] < 100)
@@ -92,36 +121,7 @@ int main( int argc, char *argv[] ) {
             position = i;
         }
     }
-    printf("the mode of cycles is: %d\n", position);
-
-
-
-    //access main memory at different locations based on BLOCKS_SIZE
-    for(i = 0; i < ITERATIONS; i+=BLOCKS_SIZE){
-        clock_gettime(CLOCK_MONOTONIC, &t1);
-        testArray[i];
-        clock_gettime(CLOCK_MONOTONIC, &t2);
-        results[i] = elapsed_ns(&t1, &t2);
-        //printf("%lu\n", results[i]);
-        sum += results[i];     
-    }
-
-    printf("sum is %f\n", sum);
-    average = sum/(ITERATIONS/BLOCKS_SIZE);
-
-    printf("Average main memory access cycles: %f\n", average);
-
-    for(i = 0; i < ITERATIONS; i++){
-        if(results[i] < 100)
-            mode[results[i]] += 1;
-    }
-    for(i = 0; i < 100; i++){
-        if(max < mode[i]){
-            max = mode[i];
-            position = i;
-        }
-    }
-    printf("the mode of main memory access cycles is: %d\n", position);
+    printf("the mode of accessing cache is: %d\n", position);
 
     return 0;
 }
