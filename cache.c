@@ -4,6 +4,14 @@
 #define ITERATIONS 400000
 #define BLOCKS_SIZE 1
 
+long elapsed_s(struct timespec* t1, struct timespec* t2)
+{
+   
+    
+    return t2->tv_sec - t1->tv_sec;
+}
+
+
 long elapsed_ns(struct timespec* t1, struct timespec* t2)
 {
   long seconds = t2->tv_sec - t1->tv_sec; 
@@ -15,6 +23,19 @@ long elapsed_ns(struct timespec* t1, struct timespec* t2)
   }
 
   return seconds*1000000000 + ns;
+}
+
+long getCacheBlockSize( int sizeOfBlock){
+    char testArray2[sizeOfBlock];
+    struct timespec t1, t2;
+    
+    clock_getres(CLOCK_MONOTONIC, &t1);
+    
+    for(int i =0; i < sizeOfBlock; i++){
+        testArray2[(i*64) %sizeOfBlock];
+    }
+    clock_gettime(CLOCK_MONOTONIC, &t2);
+    return elapsed_s(&t1, &t2);
 }
 
 
@@ -30,6 +51,12 @@ int main( int argc, char *argv[] ) {
     float max = 0;
     int position = 0;
     char testArray[ITERATIONS];
+    
+    
+    for(int size = 1024; size<= 67108864; ){
+        printf("%d, %lu\n", size/1024, getCacheBlockSize(size));
+        size = size *2;
+    }
 
     for(i = 0; i < 100; i++){
         mode[i] = 0;
@@ -75,6 +102,7 @@ int main( int argc, char *argv[] ) {
         testArray[i];
         clock_gettime(CLOCK_MONOTONIC, &t2);
         results[i] = elapsed_ns(&t1, &t2);
+        //printf("%lu\n", results[i]);
         sum += results[i];     
     }
 
