@@ -11,6 +11,7 @@
 #include <time.h>
 
 #define ITERATIONS 5000
+#define ITERATIONSCLOCK 100
 #define BLOCKS_SIZE 1
 
 
@@ -100,9 +101,7 @@ int getMode(unsigned long results[]){
     return position;
 }
 
-// -----------------------------------
-// TO DO
-// -----------------------------------
+
 //Method to calculate trimmed mean
 
 long long getTrimmedMean(unsigned long results[]){
@@ -120,21 +119,21 @@ long long getTrimmedMean(unsigned long results[]){
 
 
 
-//Method to find cache block size
-void getCacheBlockSize(){
+//Method to find cache size
+void getCacheSize(){
     struct timespec t1, t2;
     long i, count, position;
     long elapsedTimeFound;
-    long long testSize[] = {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
-                        1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
+    long long testSize[] = {1,2,4,8,16,32,64,128,256, 512,1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
+             		1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
                         268435456, 536870912, 1073741824, 2147483648, 4294967296};
     long long size;
     unsigned long results[ITERATIONS];
 
 
     //Loop to run through block sizes
-    //for(size = 1024; size<= 4294967296; ){
-    for(position = 0; position <= 22; position++){
+    //for(size = 1; size<= 4294967296; ){
+    for(position = 0; position < (sizeof(testSize)/sizeof(long long)); position++){
     for(count = 0; count<= ITERATIONS; count++ ){
         
     size = testSize[position];
@@ -157,25 +156,66 @@ void getCacheBlockSize(){
         results[count] = elapsedTimeFound;
         
 
-	    //Output
-       // printf("%lld, %lu\n", size/1024, elapsedTimeFound);
-        
-	    //Double size for next round
-	    //size = size *2;	
-    }	
-    printf("The mode of block size 2^%ld access time is %d\n", (10+position), getMode(results));
-    printf("The trimmed mean of block size 2^%ld access time is %lld\n", (10+position), getTrimmedMean(results));
+    }
+
+    //Output	
+    printf("The mode of cache size %lld access time is %d\n", testSize[position], getMode(results));
+    printf("The trimmed mean of cache size %lld access time is %lld\n", testSize[position], getTrimmedMean(results));
 
 
     }
 }
 
-// -----------------------------------
-//  TO DO
-// -----------------------------------
 
 //Method to get cache size
-void getCacheSize(){
+void getCacheBlockSize(){
+
+	   struct timespec t1, t2;
+    long i, count, position;
+    long elapsedTimeFound;
+    long long testSize[] = {1024,512, 128,100, 90, 80, 70, 64, 50, 40, 32, 16};
+    long long size;
+    unsigned long results[ITERATIONS];
+
+
+    //Loop to run through block sizes
+    //for(size = 1; size<= 4294967296; ){
+    for(position = 0; position < (sizeof(testSize)/sizeof(long long)); position++){
+    for(count = 0; count<= ITERATIONS; count++ ){
+        
+    size = testSize[position];
+	char testArray2[size/1024];
+
+
+    	//Loop builds array of block size
+    	for(i = 0; i < size/1024; i++){
+        	testArray2[i] = 'a';
+    	}
+    
+    	//Timing of each cache block size access to a random element
+    	clock_gettime(CLOCK_MONOTONIC, &t1);
+    	for(i=0; i < (sizeof(testArray2)/sizeof(char)); i++){
+
+		testArray2[(i*64) % size] +=1;
+	}
+    	clock_gettime(CLOCK_MONOTONIC, &t2);
+
+
+    	//Calculate elapsed time
+    	elapsedTimeFound = elapsed_ns(&t1, &t2);
+        results[count] = elapsedTimeFound;
+        
+
+    }
+
+    //Output	
+    printf("The mode of cache block size %lld access time is %d\n", testSize[position], getMode(results));
+    printf("The trimmed mean of cache block size %lld access time is %lld\n", testSize[position], getTrimmedMean(results));
+
+
+    }
+	
+	
 
 
 
@@ -192,16 +232,8 @@ void getClockTime(){
     float mode[100];
     float max = 0;
     int position = 0;
-    char testArray[ITERATIONS];
 
 
-    for(i = 0; i < 100; i++){
-        mode[i] = 0;
-    }
-
-    for(i = 0; i < ITERATIONS; i++){
-        testArray[ITERATIONS] = 'a';
-    }
 
     //not actually an error
     clock_getres(CLOCK_MONOTONIC, &t1);
@@ -210,15 +242,11 @@ void getClockTime(){
     //testing clock acces time for an array when only accessing one element ITERATIONS times
     for(i = 0; i < ITERATIONS; i++){
         clock_gettime(CLOCK_MONOTONIC, &t1);
-        //testArray[1000];
         clock_gettime(CLOCK_MONOTONIC, &t2);
         results[i] = elapsed_ns(&t1, &t2);
-        //sum += results[i];     
+    
     }
-    //printf("sum when accessing one element over and over %f\n", sum);
-    //average = sum/ITERATIONS;
 
-    //printf("Average nanoseconds: %f\n", average);
 
    
     printf("the mode of clock time is: %d\n", getMode(results));
@@ -226,6 +254,7 @@ void getClockTime(){
 
 }
 
+//Method to get time of accessing cache
 void getCacheTime(){
 
    struct timespec t1, t2;
@@ -245,11 +274,7 @@ void getCacheTime(){
         results[i] = elapsed_ns(&t1, &t2);
         //sum += results[i];     
     }
-    //printf("sum when accessing one element over and over %f\n", sum);
-   // average = sum/ITERATIONS;
 
-    //printf("Average nanoseconds: %f\n", average);
-    //handles mode for clock cycles
    
     printf("the mode of accessing cache is: %d\n", getMode(results));
 
@@ -273,10 +298,10 @@ int main( int argc, char *argv[] ) {
     
     //Call to methods
     getCacheBlockSize();
-    getCacheSize();
-    getClockTime();
-    getCacheTime();
-    getMainMemoryTime();
+    //getCacheSize();
+    //getClockTime();
+    //getCacheTime();
+    //getMainMemoryTime();
 
 
     return 0;
