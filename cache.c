@@ -1,9 +1,20 @@
+// -----------------------------------
+// CSCI 340 - Operating Systems
+// Spring 2019
+// cache.c file
+// 
+// Final Project
+// Hannah Carl & Jacob Mattox
+// -----------------------------------
+
 #include <stdio.h>
 #include <time.h>
 
 #define ITERATIONS 400000
 #define BLOCKS_SIZE 1
 
+
+//Method returns the elapsed time in seconds
 long elapsed_s(struct timespec* t1, struct timespec* t2)
 {
    
@@ -11,7 +22,7 @@ long elapsed_s(struct timespec* t1, struct timespec* t2)
     return t2->tv_sec - t1->tv_sec;
 }
 
-
+//Method returns the elapsed time in nanoseconds
 long elapsed_ns(struct timespec* t1, struct timespec* t2)
 {
   long seconds = t2->tv_sec - t1->tv_sec; 
@@ -25,25 +36,84 @@ long elapsed_ns(struct timespec* t1, struct timespec* t2)
   return seconds*1000000000 + ns;
 }
 
-long getCacheBlockSize( long sizeOfBlock){
-    char testArray2[sizeOfBlock/1024];
-    struct timespec t1, t2;
-    long i;
-    for(i = 0; i < sizeOfBlock/1024; i++){
-        testArray2[i] = 'a';
-    }
-    clock_gettime(CLOCK_MONOTONIC, &t1);
-    
-    //for(i =0; i < sizeOfBlock; i++){
-        testArray2[(i*64) % sizeOfBlock];
-   // }
-    clock_gettime(CLOCK_MONOTONIC, &t2);
-    return elapsed_ns(&t1, &t2);
+
+// -----------------------------------
+// TO DO
+// -----------------------------------
+//Method to calculate median
+
+void getMedian(){
+
+}
+
+// -----------------------------------
+// TO DO
+// -----------------------------------
+//Method to calculate mode
+
+void getMode(){
+
+}
+
+// -----------------------------------
+// TO DO
+// -----------------------------------
+//Method to calculate trimmed mean
+
+void getTrimmedMean(){
+
 }
 
 
 
-int main( int argc, char *argv[] ) {
+//Method to find cache block size
+void getCacheBlockSize(){
+    struct timespec t1, t2;
+    long i;
+    long elapsedTimeFound;
+    long long size;
+
+    //Loop to run through block sizes
+    for(size = 1024; size<= 4294967296; ){
+   
+	char testArray2[size/1024];
+
+    	//Loop builds array of block size
+    	for(i = 0; i < size/1024; i++){
+        	testArray2[i] = 'a';
+    	}
+    
+    	//Timing of each cache block size access to a random element
+    	clock_gettime(CLOCK_MONOTONIC, &t1);
+    	testArray2[(i*64) % size];
+    	clock_gettime(CLOCK_MONOTONIC, &t2);
+
+
+    	//Calculate elapsed time
+    	elapsedTimeFound = elapsed_ns(&t1, &t2);
+
+	//Output
+        printf("%lld, %lu\n", size/1024, elapsedTimeFound);
+        
+	//Double size for next round
+	size = size *2;		
+
+    }
+}
+
+// -----------------------------------
+//  TO DO
+// -----------------------------------
+
+//Method to get cache size
+void getCacheSize(){
+
+
+
+}
+
+//Method to measure time of call clock functions
+void getClockTime(){
 
     struct timespec t1, t2;
     unsigned long i;
@@ -54,17 +124,12 @@ int main( int argc, char *argv[] ) {
     float max = 0;
     int position = 0;
     char testArray[ITERATIONS];
-    long long size;
-    
-    
-    for(size = 1024; size<= 4294967296; ){
-        printf("%lld, %lu\n", size/1024, getCacheBlockSize(size));
-        size = size *2;
-    }
+
 
     for(i = 0; i < 100; i++){
         mode[i] = 0;
     }
+
     for(i = 0; i < ITERATIONS; i++){
         testArray[ITERATIONS] = 'a';
     }
@@ -99,7 +164,21 @@ int main( int argc, char *argv[] ) {
     printf("the mode of clock time is: %d\n", position);
 
 
-    for(i = 0; i < ITERATIONS; i++){
+}
+
+void getCacheTime(){
+
+   struct timespec t1, t2;
+    unsigned long i;
+    unsigned long results[ITERATIONS];
+    float sum = 0;
+    float average;
+    float mode[100];
+    float max = 0;
+    int position = 0;
+    char testArray[ITERATIONS];
+
+   for(i = 0; i < ITERATIONS; i++){
         clock_gettime(CLOCK_MONOTONIC, &t1);
         testArray[0] = 'b';
         clock_gettime(CLOCK_MONOTONIC, &t2);
@@ -122,6 +201,33 @@ int main( int argc, char *argv[] ) {
         }
     }
     printf("the mode of accessing cache is: %d\n", position);
+
+
+}
+
+
+
+// -----------------------------------
+//   To Do
+// -----------------------------------
+//Method to get time to access main memory
+void getMainMemoryTime(){
+
+
+}
+
+
+//Main method
+int main( int argc, char *argv[] ) {
+
+    
+    //Call to methods
+    getCacheBlockSize();
+    getCacheSize();
+    getClockTime();
+    getCacheTime();
+    getMainMemoryTime();
+
 
     return 0;
 }
