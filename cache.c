@@ -10,15 +10,13 @@
 #include <stdio.h>
 #include <time.h>
 
-#define ITERATIONS 400000
+#define ITERATIONS 5000
 #define BLOCKS_SIZE 1
 
 
 //Method returns the elapsed time in seconds
 long elapsed_s(struct timespec* t1, struct timespec* t2)
 {
-   
-    
     return t2->tv_sec - t1->tv_sec;
 }
 
@@ -32,7 +30,6 @@ long elapsed_ns(struct timespec* t1, struct timespec* t2)
     --seconds;
     ns += 1000000000; 
   }
-
   return seconds*1000000000 + ns;
 }
 
@@ -46,17 +43,14 @@ void sortArray(float *arrayPtr, int size){
     int k = 0;
 
     for(i=0; i < size; i++){
-
-	for(j=0; j< size-1; j++){
-
-		if(arrayPtr[j] > arrayPtr[j+1]){
-			k = arrayPtr[j];
-			arrayPtr[j] = arrayPtr[j+1];
-			arrayPtr[j+1] = k;
-		}
-	}
+        for(j=0; j< size-1; j++){
+            if(arrayPtr[j] > arrayPtr[j+1]){
+                k = arrayPtr[j];
+                arrayPtr[j] = arrayPtr[j+1];
+                arrayPtr[j+1] = k;
+            }
+        }
     }
-
 }
 
 
@@ -64,23 +58,17 @@ void sortArray(float *arrayPtr, int size){
 
 float getMedian(unsigned long results[], int size){
 
-
     float median = 0;
 
     //If size of array even
     if(size%2 == 0){
-
-	median = (results[size-1/2] + results[size/2])/2.0;
-
+	    median = (results[(size-1)/2] + results[size/2])/2.0;
     }
     //Else if size of array odd
     else{
         median = results[size/2];
     }
-
-
     return median;
-
 }
 
 
@@ -94,25 +82,22 @@ int getMode(unsigned long results[]){
     int position = 0;
     char testArray[ITERATIONS];
 
-
     for(i = 0; i < 100; i++){
         mode[i] = 0;
     }
-
 
    for(i = 0; i < ITERATIONS; i++){
         if(results[i] < 100)
             mode[results[i]] += 1;
     }
+
     for(i = 0; i < 100; i++){
         if(max < mode[i]){
             max = mode[i];
             position = i;
         }
     }
-
     return position;
-
 }
 
 // -----------------------------------
@@ -120,8 +105,17 @@ int getMode(unsigned long results[]){
 // -----------------------------------
 //Method to calculate trimmed mean
 
-void getTrimmedMean(){
+long long getTrimmedMean(unsigned long results[]){
+    long i = ITERATIONS/4;
+    long long sum = 0;
+    long long average;
+    
+    for(; i < ITERATIONS*3/4; i++){
+        sum += results[i];
+    }
+    average = sum/(ITERATIONS/2);
 
+    return average;
 }
 
 
@@ -129,14 +123,23 @@ void getTrimmedMean(){
 //Method to find cache block size
 void getCacheBlockSize(){
     struct timespec t1, t2;
-    long i;
+    long i, count, position;
     long elapsedTimeFound;
+    long long testSize[] = {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
+                        1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
+                        268435456, 536870912, 1073741824, 2147483648, 4294967296};
     long long size;
+    unsigned long results[ITERATIONS];
+
 
     //Loop to run through block sizes
-    for(size = 1024; size<= 4294967296; ){
-   
+    //for(size = 1024; size<= 4294967296; ){
+    for(position = 0; position <= 22; position++){
+    for(count = 0; count<= ITERATIONS; count++ ){
+        
+    size = testSize[position];
 	char testArray2[size/1024];
+
 
     	//Loop builds array of block size
     	for(i = 0; i < size/1024; i++){
@@ -151,12 +154,18 @@ void getCacheBlockSize(){
 
     	//Calculate elapsed time
     	elapsedTimeFound = elapsed_ns(&t1, &t2);
-
-	//Output
-        printf("%lld, %lu\n", size/1024, elapsedTimeFound);
+        results[count] = elapsedTimeFound;
         
-	//Double size for next round
-	size = size *2;		
+
+	    //Output
+       // printf("%lld, %lu\n", size/1024, elapsedTimeFound);
+        
+	    //Double size for next round
+	    //size = size *2;	
+    }	
+    printf("The mode of block size 2^%ld access time is %d\n", (10+position), getMode(results));
+    printf("The trimmed mean of block size 2^%ld access time is %lld\n", (10+position), getTrimmedMean(results));
+
 
     }
 }
@@ -261,7 +270,6 @@ void getMainMemoryTime(){
 
 //Main method
 int main( int argc, char *argv[] ) {
-
     
     //Call to methods
     getCacheBlockSize();
