@@ -37,21 +37,81 @@ long elapsed_ns(struct timespec* t1, struct timespec* t2)
 }
 
 
-// -----------------------------------
-// TO DO
-// -----------------------------------
-//Method to calculate median
+//Method to sort array in ascending order
 
-void getMedian(){
+void sortArray(float *arrayPtr, int size){
+
+    int i =0;
+    int j = 0;
+    int k = 0;
+
+    for(i=0; i < size; i++){
+
+	for(j=0; j< size-1; j++){
+
+		if(arrayPtr[j] > arrayPtr[j+1]){
+			k = arrayPtr[j];
+			arrayPtr[j] = arrayPtr[j+1];
+			arrayPtr[j+1] = k;
+		}
+	}
+    }
 
 }
 
-// -----------------------------------
-// TO DO
-// -----------------------------------
+
+//Method to calculate median
+
+float getMedian(unsigned long results[], int size){
+
+
+    float median = 0;
+
+    //If size of array even
+    if(size%2 == 0){
+
+	median = (results[size-1/2] + results[size/2])/2.0;
+
+    }
+    //Else if size of array odd
+    else{
+        median = results[size/2];
+    }
+
+
+    return median;
+
+}
+
+
 //Method to calculate mode
 
-void getMode(){
+int getMode(unsigned long results[]){
+
+    unsigned long i;
+    float mode[100];
+    float max = 0;
+    int position = 0;
+    char testArray[ITERATIONS];
+
+
+    for(i = 0; i < 100; i++){
+        mode[i] = 0;
+    }
+
+
+   for(i = 0; i < ITERATIONS; i++){
+        if(results[i] < 100)
+            mode[results[i]] += 1;
+    }
+    for(i = 0; i < 100; i++){
+        if(max < mode[i]){
+            max = mode[i];
+            position = i;
+        }
+    }
+
+    return position;
 
 }
 
@@ -151,17 +211,8 @@ void getClockTime(){
 
     //printf("Average nanoseconds: %f\n", average);
 
-    for(i = 0; i < ITERATIONS; i++){
-        if(results[i] < 100)
-            mode[results[i]] += 1;
-    }
-    for(i = 0; i < 100; i++){
-        if(max < mode[i]){
-            max = mode[i];
-            position = i;
-        }
-    }
-    printf("the mode of clock time is: %d\n", position);
+   
+    printf("the mode of clock time is: %d\n", getMode(results));
 
 
 }
@@ -190,17 +241,8 @@ void getCacheTime(){
 
     //printf("Average nanoseconds: %f\n", average);
     //handles mode for clock cycles
-    for(i = 0; i < ITERATIONS; i++){
-        if(results[i] < 100)
-            mode[results[i]] += 1;
-    }
-    for(i = 0; i < 100; i++){
-        if(max < mode[i]){
-            max = mode[i];
-            position = i;
-        }
-    }
-    printf("the mode of accessing cache is: %d\n", position);
+   
+    printf("the mode of accessing cache is: %d\n", getMode(results));
 
 
 }
