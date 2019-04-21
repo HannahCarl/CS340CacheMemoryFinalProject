@@ -131,30 +131,39 @@ void getCacheSize(){
     struct timespec t1, t2;
     long i, count, position;
     long elapsedTimeFound;
-    long long testSize[] = {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
-             		1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
-                        268435456, 536870912, 1073741824, 2147483648, 4294967296};
+    //long long testSize[] = {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
+             		//1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
+                       // 268435456, 536870912, 1073741824, 2147483648, 4294967296};
+    long long testSize[] = {8192, 16384, 32768, 65536, 131072, 262144, 524288};
     long long size;
     double results[ITERATIONS];
+    double mode = 0.0;
+    double previousMode =0.0;
+    char tempChar = 'a';
+
+
 
 
     //Loop to run through block sizes
-    //for(size = 1; size<= 4294967296; ){
+    //for(size = 1024; size<= 4294967296; ){
     for(position = 0; position < (sizeof(testSize)/sizeof(long long)); position++){
     for(count = 0; count<= ITERATIONS; count++ ){
         
     size = testSize[position];
-	char testArray2[size/1024];
+	char testArray2[size];
 
 
     	//Loop builds array of block size
-    	for(i = 0; i < size/1024; i++){
+    	for(i = 0; i < size; i++){
         	testArray2[i] = 'a';
     	}
     
     	//Timing of each cache block size access to a random element
     	clock_gettime(CLOCK_MONOTONIC, &t1);
-    	testArray2[(i*64) % size];
+	tempChar = testArray2[i];
+    	testArray2[(i*64) % (size)] +=1;
+	testArray2[i] +=1;
+	
     	clock_gettime(CLOCK_MONOTONIC, &t2);
 
 
@@ -164,10 +173,19 @@ void getCacheSize(){
         
 
     }
+    previousMode = mode;
+    mode = getMode(results);
+
+    
 
     //Output	
-    printf("The mode of cache size %lld access time is %f\n", testSize[position], getMode(results));
-    printf("The trimmed mean of cache size %lld access time is %lld\n", testSize[position], getTrimmedMean(results));
+    //printf("The mode of cache size %lld access time is %f\n", testSize[position], mode);
+   // printf("The trimmed mean of cache size %lld access time is %lld\n", testSize[position], getTrimmedMean(results));
+
+    if(previousMode > 0 && (mode/previousMode) > 1.2){
+	printf("The L2 cache size is approximately: %lld bytes\n", testSize[position]/2);
+	break;
+    }
 
 
     }
@@ -183,8 +201,8 @@ void getCacheBlockSize(){
     long long testSize[] = {16,32,64,128,512,1024};
     long long size;
     double results[ITERATIONS];
-    double mode = 0;
-    double previousMode =0;
+    double mode = 0.0;
+    double previousMode =0.0;
 
 
     //Loop to run through block sizes
@@ -225,7 +243,7 @@ void getCacheBlockSize(){
     //printf("The mode of cache block size %lld access time is %f\n", testSize[position], getMode(results));
     //printf("The trimmed mean of cache block size %lld access time is %lld\n", testSize[position], getTrimmedMean(results));
 
-    if((mode/previousMode) > 1.45 && previousMode >0){
+    if(previousMode >0 && (mode/previousMode) > 1.45 ){
 	printf("The cache block size is approximately: %lld bytes\n", testSize[position]);
 	break;
     }
@@ -329,7 +347,7 @@ int main( int argc, char *argv[] ) {
     
     //Call to methods
     getCacheBlockSize();
-   // getCacheSize();
+    getCacheSize();
     getCacheTime();
     //getMainMemoryTime();
 
