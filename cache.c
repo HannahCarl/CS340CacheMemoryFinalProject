@@ -8,6 +8,7 @@
 // -----------------------------------
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define ITERATIONS 5000
@@ -37,7 +38,7 @@ long elapsed_ns(struct timespec* t1, struct timespec* t2)
 
 //Method to sort array in ascending order
 
-void sortArray(float *arrayPtr, int size){
+void sortArray(double *arrayPtr, int size){
 
     int i =0;
     int j = 0;
@@ -57,7 +58,7 @@ void sortArray(float *arrayPtr, int size){
 
 //Method to calculate median
 
-float getMedian(unsigned long results[], int size){
+float getMedian(double results[], int size){
 
     float median = 0;
 
@@ -182,8 +183,8 @@ void getCacheSize(){
     //printf("The mode of cache size %lld access time is %f\n", testSize[position], mode);
    // printf("The trimmed mean of cache size %lld access time is %lld\n", testSize[position], getTrimmedMean(results));
 
-    if(previousMode > 0 && (mode/previousMode) > 1.2){
-	printf("The L2 cache size is approximately: %lld bytes\n", testSize[position]/2);
+    if(previousMode > 0 && (mode-previousMode) >= 2){
+	printf("The L2 cache size is approximately: %lld bytes\n", testSize[position]);
 	break;
     }
 
@@ -332,11 +333,81 @@ void getCacheTime(){
 
 
 
-// -----------------------------------
-//   To Do
-// -----------------------------------
+
 //Method to get time to access main memory
 void getMainMemoryTime(){
+
+    struct timespec t1, t2;
+    long i, count, position;
+    long elapsedTimeFound;
+    long long testSize[] = {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
+             		1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
+                        268435456, 536870912, 1073741824, 2147483648, 4294967296,8589934592};
+    long long size;
+    double results[ITERATIONS];
+    double mode = 0.0;
+    char tempChar = 'a';
+    char *cArray; 
+    int memoryAccess = 7;
+    double memoryModes[memoryAccess];
+    int numOfMemoryAccess = 0;
+
+
+
+
+    //Loop to run through block sizes
+    //for(size = 1024; size<= 4294967296; ){
+    for(position = 0; position < (sizeof(testSize)/sizeof(long long)); position++){
+    	for(count = 0; count<= ITERATIONS; count++ ){
+        
+   	 size = testSize[position];
+	 cArray = (char*) malloc(testSize[position]*sizeof(char));
+
+
+    	//Loop builds array of block size
+    	//for(i = 0; i < size; i++){
+        //	testArray2[i] = 'a';
+    	//}
+    
+    	//Timing of each cache block size access to a random element
+    	clock_gettime(CLOCK_MONOTONIC, &t1);
+    	//tempChar = testArray2[0];
+
+	//for(i=0; i < size/16; i++){
+	cArray[(i*64) % size] = 'a';
+
+	//}
+	
+    	clock_gettime(CLOCK_MONOTONIC, &t2);
+
+
+    	//Calculate elapsed time
+    	elapsedTimeFound = elapsed_ns(&t1, &t2);
+        results[count] = elapsedTimeFound;
+
+	free(cArray);
+        
+
+    }
+
+    mode = getMode(results);
+    if(position > 16){
+	memoryModes[numOfMemoryAccess] = mode;
+	numOfMemoryAccess++;
+    }
+   
+
+    //Output	
+    //printf("The mode of memory size %lld access time is %f\n", testSize[position], mode);
+   // printf("The trimmed mean of cache size %lld access time is %lld\n", testSize[position], getTrimmedMean(results));
+
+
+    }
+
+	sortArray(memoryModes, memoryAccess);
+	mode = getMedian(memoryModes, memoryAccess);
+
+	printf("A reference to memory takes approximately: %.6f ns\n", mode);
 
 
 }
@@ -349,7 +420,7 @@ int main( int argc, char *argv[] ) {
     getCacheBlockSize();
     getCacheSize();
     getCacheTime();
-    //getMainMemoryTime();
+    getMainMemoryTime();
 
 
     return 0;
