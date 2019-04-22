@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "cache.h"
 
 #define ITERATIONS 5000
 #define ITERATIONSCLOCK 100
@@ -161,9 +162,9 @@ void getCacheSize(){
     
     	//Timing of each cache block size access to a random element
     	clock_gettime(CLOCK_MONOTONIC, &t1);
-	tempChar = testArray2[i];
+	    tempChar = testArray2[i];
     	testArray2[(i*64) % (size)] +=1;
-	testArray2[i] +=1;
+	    testArray2[i] +=1;
 	
     	clock_gettime(CLOCK_MONOTONIC, &t2);
 
@@ -248,14 +249,7 @@ void getCacheBlockSize(){
 	printf("The cache block size is approximately: %lld bytes\n", testSize[position]);
 	break;
     }
-
-
     }
-	
-	
-
-
-
 }
 
 //Method to measure time of call clock functions
@@ -342,7 +336,8 @@ void getMainMemoryTime(){
     long elapsedTimeFound;
     long long testSize[] = {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
              		1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
-                        268435456, 536870912, 1073741824, 2147483648, 4294967296,8589934592};
+                        268435456, 536870912, 1073741824, 2147483648, 4294967296};
+                        //8589934592
     long long size;
     double results[ITERATIONS];
     double mode = 0.0;
