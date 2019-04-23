@@ -12,7 +12,7 @@
 #include <time.h>
 #include "cache.h"
 
-#define ITERATIONS 5000
+#define ITERATIONS 50000
 #define ITERATIONSCLOCK 100
 #define BLOCKS_SIZE 1
 
